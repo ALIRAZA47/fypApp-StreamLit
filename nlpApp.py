@@ -9,7 +9,16 @@ import os
 import OpenAI
 import TextBlob
 from st_aggrid import AgGrid
-# from sparknlp.base import LighPipiLine
+# spark nlp imports
+import SparkNLP  # our API
+from sparknlp.base import LightPipeline, Pipeline
+import sparknlp
+
+
+# Global Variables Here
+sentimentDict = {'positive':"**Sentiment::** Positive :smiley: ",
+                'negative':"**Sentiment::** Negative :angry: ",
+                'neutral':"**Sentiment::** Neutral 😐 "}
 
 
 
@@ -81,20 +90,24 @@ def main():
         # layout
         col1,col2,col3 = st.columns(3) 
         if submit_button:
+            spark, fullPipline, lightPipeline = SparkNLP.startSparkAndPreparePipeline()    #Spark NLP intialization
             with col1:
                 # Open AI Sentiment Analysis
+                st.info("Openai GPT3") #Openai GPT-3 <--------------------------------------
                 OpenAI.showResults(inputText) 
                 
             with col2:
+                st.info("TextBlob Sentiment Analysis (sentiwordnet)")
                 TextBlob.showResults(inputText)
             
             with col3:
-                pass
-                
+                st.info("SparkNLP's Pretrained Pipeline (sentimentdl_user_twitter )") #Spark NLP Pipeline<--------------------------------------
+                result = lightPipeline.annotate(inputText)
+                st.write(result)
+                st.markdown(sentimentDict[result['sentiment'][0]])                
 
     elif choice == "Spark NLP": 
         st.subheader("John Snow Labs' Spark NLP Sentiment Analysis")
-        import SparkNLP
         rawData = SparkNLP.readAndShowData()
         # st.header("Raw Comments (Twitter)", 
         st.markdown('<h4 style="text-align: center;:"> \

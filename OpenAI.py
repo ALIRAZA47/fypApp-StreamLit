@@ -16,8 +16,6 @@ def sentimentAnalysis(rawText):
     return response["choices"][0]["text"][:-1].strip(), response
     
 def showResults(rawText):
-    # #Openai GPT3
-    st.info("Openai GPT3") #Openai GPT-3 <--------------------------------------
     sentimentOpen,rawResponse = sentimentAnalysis(rawText)
     st.write(rawResponse)
     #Emoji
@@ -27,3 +25,5 @@ def showResults(rawText):
         st.markdown("**Sentiment::** Negative :angry: ")
     else: #polarity == 0   
         st.markdown("**Sentiment::** Neutral 😐 ")
+
+

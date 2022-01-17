@@ -3,7 +3,6 @@ import streamlit as st
 import pandas as pd
 import altair as alt #For Visualization
 
-
 def computerSentiment(text):
     fullRes = TextBlob(text)
     sentimentRes = fullRes.sentiment
@@ -21,7 +20,6 @@ def computerSentiment(text):
 
 # TextBlob Sentiment Analysis (sentiwordnet)
 def showResults(inputText):
-    st.info("TextBlob Sentiment Analysis (sentiwordnet)")
 
     sentiment, fullResult = computerSentiment(inputText)
     st.markdown(sentiment)
@@ -33,8 +31,8 @@ def showResults(inputText):
     resultDataFrame = pd.DataFrame({'polarity': fullResult.polarity,'subjectivity': fullResult.subjectivity}.items(), columns=['metric', 'value'])
     st.dataframe(resultDataFrame)
     # Visualization
-    c = alt.Chart(resultDataFrame).mark_bar().encode(
-    x='metric',
-    y='value',
-    color='metric')
-    st.altair_chart(c, use_container_width=True)
+    # c = alt.Chart(resultDataFrame).mark_bar().encode(
+    # x='metric',
+    # y='value',
+    # color='metric')
+    # st.altair_chart(c, use_container_width=True)
