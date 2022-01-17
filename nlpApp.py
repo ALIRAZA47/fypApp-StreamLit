@@ -1,12 +1,13 @@
+from typing import Text
 import streamlit as st
-from textblob import TextBlob
 import pandas as pd
 import altair as alt #For Visualization
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from afinn import Afinn
 import os
-import openAI
+import OpenAI
+import TextBlob
 
 
 
@@ -69,12 +70,6 @@ def covent_to_dataFrameVADER(sentiDic):
     sentiDataFrame = pd.DataFrame(sentiDic.items(), columns=['metric', 'value'])
     return sentiDataFrame
 
-def covent_to_dataFrame(sentiment):
-    #print(sentiDic)
-    #print(type(sentiDic)) #<class 'textblob.en.sentiments.Sentiment'>
-    sentiDic = {'polarity': sentiment.polarity, 'subjectivity': sentiment.subjectivity}
-    sentiDataFrame = pd.DataFrame(sentiDic.items(), columns=['metric', 'value'])
-    return sentiDataFrame
 
 def sentiAnalysisVADER(rawText):
     	# Create a SentimentIntensityAnalyzer object.
@@ -101,21 +96,28 @@ def main():
     st.title("Deep Research App")
     st.markdown("**Welcome** 😊")
     
-    menu = ["Home", "ML", "Comparison", "About"]
+    menu = ["Home", "Spark NLP", "BERT", "Comparison", "About"]
     choice = st.sidebar.selectbox("Menu", menu)
     
     if choice == "Home":
         st.subheader("Rule-Based Sentiment Analysis")
         with st.form(key='nlpForm'):
-            raw_text = st.text_area("Enter Text Here:")
+            inputText = st.text_area("Enter Text Here:")
             submit_button = st.form_submit_button(label='Analyze')
             
         # layout
         col1,col2,col3 = st.columns(3) 
         if submit_button:
             with col1:
+                
+                #***************************************************************
+                # Open AI Sentiment Analysis
+                OpenAI.showResults(inputText) 
+            
+                
+            with col2:
                 # st.info("TextBlob Sentiment Analysis (sentiwordnet)") #TextBlob Sentiment Analysis (sentiwordnet)
-                # sentiment = TextBlob(raw_text).sentiment
+                # sentiment = TextBlob(inputText).sentiment
                 # st.write(sentiment)
                 # #Emoji
                 # if sentiment.polarity > 0:
@@ -135,49 +137,11 @@ def main():
 				# 	color='metric')
                 # st.altair_chart(c,use_container_width=True)
                 
-                #***************************************************************
-                
-                # #Openai GPT3
-                st.info("Openai GPT3") #Openai GPT-3 <--------------------------------------
-                sentimentOpen,rawResponse = openAI.sentimentAnalysis(raw_text)
-                st.write(rawResponse)
-                #Emoji
-                if sentimentOpen == "Positive":
-                    st.markdown("**Sentiment::** Positive :smiley: ")
-                elif sentimentOpen == "Negative":
-                    st.markdown("**Sentiment::** Negative :angry: ")
-                else: #polarity == 0   
-                    st.markdown("**Sentiment::** Neutral 😐 ")
-                #*************************************************************** 
-            
-                
-            with col2:
-                st.info("VADER Sentiment Analysis") #VADER Sentiment Analysis
-                sentimentDict = sentiAnalysisVADER(raw_text)
-                st.write(sentimentDict)
-                # decide sentiment as positive, negative and neutral
-                if sentimentDict['compound'] >= 0.05 :
-                    st.markdown("**Sentiment::** Positive :smiley: ")
-
-                elif sentimentDict['compound'] <= - 0.05 :
-                    st.markdown("**Sentiment::** Negative :angry: ")
-
-                else :#polarity < +0.05 and > -0.05
-                    st.markdown("**Sentiment::** Neutral 😐 ")
-
-                #DataFrame TextBlob Output
-                resultDataFrame = covent_to_dataFrameVADER(sentimentDict)
-                st.dataframe(resultDataFrame)
-                # Visualization
-                c = alt.Chart(resultDataFrame).mark_bar().encode(
-					x='metric',
-					y='value',
-					color='metric')
-                st.altair_chart(c,use_container_width=True)
+                TextBlob.showResults(inputText)
             
             with col3:
                 st.info("Afinn Sentiment Analysis") #TextBlob Sentiment Analysis (sentiwordnet)
-                sentiment = sentimentAnalysisAfinn(raw_text)
+                sentiment = sentimentAnalysisAfinn(inputText)
                 st.write(sentiment)
                 #Emoji
                 if sentiment > 0:
@@ -191,6 +155,8 @@ def main():
 
     elif choice == "ML": 
         st.subheader("ML-Based Sentiment Analysis")
+        from SparkNLP import func1
+        func1()
                
     elif choice == "Comparision": 
         st.subheader("Comparision")

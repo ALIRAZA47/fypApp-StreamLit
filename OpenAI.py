@@ -1,6 +1,6 @@
 import pandas as pd
 import openai
-
+import streamlit as st
 
 def sentimentAnalysis(rawText):    
     openai.api_key = "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"
@@ -15,8 +15,15 @@ def sentimentAnalysis(rawText):
     stop=["###"])
     return response["choices"][0]["text"][:-1].strip(), response
     
-
-def openAISentimentAnalysis(raw_text):         
-    #Openai GPT3
-    sentimentOpen,rawResponse = openaiSentiAnalysis(raw_text)
-    return sentimentOpen,rawResponse
+def showResults(rawText):
+    # #Openai GPT3
+    st.info("Openai GPT3") #Openai GPT-3 <--------------------------------------
+    sentimentOpen,rawResponse = sentimentAnalysis(rawText)
+    st.write(rawResponse)
+    #Emoji
+    if sentimentOpen == "Positive":
+        st.markdown("**Sentiment::** Positive :smiley: ")
+    elif sentimentOpen == "Negative":
+        st.markdown("**Sentiment::** Negative :angry: ")
+    else: #polarity == 0   
+        st.markdown("**Sentiment::** Neutral 😐 ")
