@@ -116,5 +116,5 @@ def doEverything():
 
     # transform results of Spark to Pandas DataFrame
     transformedData = concateResults(result, rawData)
-
-    return transformedData
+    confMatrix = pd.crosstab(transformedData['sentiment'], transformedData['Predicted Sentiments'])
+    return transformedData, confMatrix

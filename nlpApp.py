@@ -1,14 +1,13 @@
 from typing import Text
 import streamlit as st
+from st_aggrid import AgGrid
+
 import pandas as pd
 import altair as alt #For Visualization
-import nltk
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from afinn import Afinn
 import os
-import OpenAI
+
 import TextBlob
-from st_aggrid import AgGrid
+import OpenAI
 # spark nlp imports
 import SparkNLP  # our API
 from sparknlp.base import LightPipeline, Pipeline
@@ -21,13 +20,8 @@ sentimentDict = {'positive':"**Sentiment::** Positive :smiley: ",
                 'neutral':"**Sentiment::** Neutral 😐 "}
 
 
-
-
-#CustomizingUI
+# CustomizingUI
 def customizeUI():
-    #<-------------------------------------------------------------------------->
-    # customising the Streamlit UI start <-----------------------------------------
-    # https://towardsdatascience.com/5-ways-to-customise-your-streamlit-ui-e914e458a17c 
 
     #Set the page title and icon
     st.set_page_config(
@@ -56,21 +50,7 @@ def customizeUI():
 
     st.image('./nlp2.jpeg') # Img Reference: https://editor.analyticsvidhya.com/uploads/49583NLP-scaled-1-2048x771.jpeg
 
-    
-    # customising the Streamlit UI end <-----------------------------------------
-    #<-------------------------------------------------------------------------->
-    #<-------------------------------------------------------------------------->
-
-
-#Textblob:
-#By default, it calculates average polarity and subjectivity
-#over each word in a given text using a dictionary of adjectives
-#and their hand-tagged scores. It actually uses pattern library
-#for that, which takes the individual word scores from sentiwordnet.
-
-# *******************************************************************
-
-# *******************************************************************
+# Main Function
   
 def main():
     customizeUI()
@@ -78,10 +58,10 @@ def main():
     st.title("Deep Research App")
     st.markdown("**Welcome** 😊")
     
-    menu = ["Home", "Spark NLP", "BERT", "Comparison", "About"]
-    choice = st.sidebar.selectbox("Menu", menu)
+    menu = ["Comparative Analysis", "Spark NLP", "BERT", "Comparison", "Live Twitter Feed"]
+    selectedTab = st.sidebar.selectbox("Menu", menu)
     
-    if choice == "Home":
+    if selectedTab == "Comparative Analysis":
         st.subheader("Rule-Based Sentiment Analysis")
         with st.form(key='nlpForm'):
             inputText = st.text_area("Enter Text Here:")
@@ -106,7 +86,7 @@ def main():
                 st.write(result)
                 st.markdown(sentimentDict[result['sentiment'][0]])                
 
-    elif choice == "Spark NLP": 
+    elif selectedTab == "Spark NLP": 
         st.subheader("John Snow Labs' Spark NLP Sentiment Analysis")
         rawData = SparkNLP.readAndShowData()
         # st.header("Raw Comments (Twitter)", 
@@ -123,18 +103,26 @@ def main():
                     Resultant Data (with Predicted Sentiments) \
                     </h4>',
                     unsafe_allow_html=True)
-            resultDF = SparkNLP.doEverything()
+            resultDF, confMatrix = SparkNLP.doEverything()
             AgGrid(resultDF)
-        
-            # Visualize Results
-            # st.markdown('<h4 style="text-align: center;:"> \
-            #             Results '+ str(resultDF.sentiment.value_counts()) +' \
-            #             </h4>',
-            #         unsafe_allow_html=True)
-        
-        
-    elif choice == "Comparision": 
+            st.write(confMatrix)
+    
+    elif selectedTab == "Comparision": 
         st.subheader("About")
+    
+    elif selectedTab == "BERT": 
+        st.subheader("BERT Analysis")
+    
+    elif selectedTab == "Live Twitter Feed": 
+        st.subheader("Live Twitter Feed")
+        # Form
+        with st.form(key='twitterLinkForm'):
+            inputTweetLink = st.text_area("Enter Tweet Link Here:")
+            fetchTweetsBtn = st.form_submit_button(label='Fetch Tweets')
         
+        if fetchTweetsBtn:
+            st.write(inputTweetLink)
+   
+  
 if __name__ == "__main__":
     main()
