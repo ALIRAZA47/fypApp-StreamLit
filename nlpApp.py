@@ -1,10 +1,13 @@
+from asyncore import write
 from typing import Text
+from xml.dom import ValidationErr
 import streamlit as st
 from st_aggrid import AgGrid
 
 import pandas as pd
 import altair as alt #For Visualization
 import os
+import validators
 
 import TextBlob
 import OpenAI
@@ -121,8 +124,11 @@ def main():
             fetchTweetsBtn = st.form_submit_button(label='Fetch Tweets')
         
         if fetchTweetsBtn:
-            st.write(inputTweetLink)
-   
+            if validators.url(inputTweetLink):
+                # URL is valid
+                
+            else:
+                st.error("Please Enter a Valid URL")
   
 if __name__ == "__main__":
     main()
