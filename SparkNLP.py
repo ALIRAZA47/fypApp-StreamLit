@@ -108,9 +108,8 @@ def concateResults(result, tweets_df):
     # tweets_df.to_csv('tweets_with_predicted_sentiment.csv', index=False)
 # %% 
 # @title driver function
-def doEverything():
+def doEverything(rawData = readAndShowData()):
     spark, nlpPipeline, lightPipeline = startSparkAndPreparePipeline()
-    rawData = readAndShowData()
     # transform data
     result = transformData(rawData, spark, nlpPipeline)
 

@@ -8,10 +8,11 @@ import pandas as pd
 import altair as alt #For Visualization
 import os
 import validators
-
+import TweetsScrapper  #For Scrapping Tweets
 import TextBlob
 import OpenAI
 # spark nlp imports
+import TextPreprocessing
 import SparkNLP  # our API
 from sparknlp.base import LightPipeline, Pipeline
 import sparknlp
@@ -29,7 +30,7 @@ def customizeUI():
     #Set the page title and icon
     st.set_page_config(
         page_title="Deep NLP",
-        page_icon="🔥",
+        page_icon="🔥", 
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items=None
@@ -126,6 +127,14 @@ def main():
         if fetchTweetsBtn:
             if validators.url(inputTweetLink):
                 # URL is valid
+                st.info("Fetching Tweets...")
+                tweets = pd.read_csv('replies_clean.csv')
+                # tweets = TweetsScrapper.fetchTweets(inputTweetLink)
+                st.subheader("(Raw) Replies on {} by {} " .format(inputTweetLink.split('/')[3], inputTweetLink.split('/')[5]))
+                AgGrid(tweets)
+                
+                # TODO: Add Live Sentiment Analysis here
+                
                 
             else:
                 st.error("Please Enter a Valid URL")
