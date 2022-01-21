@@ -1,7 +1,7 @@
 import tweepy
 import ssl
 import pandas as pd
-
+import os
 # ssl._create_default_https_context = ssl._create_unverified_context
 
 # Set API Key and Access tokens
@@ -28,7 +28,7 @@ def fetchTweets(inputURL):
 
 
 
-    tweets = tweepy.Cursor(api.search_tweets,q='to:'+userName, result_type='recent', lang='en').items(100)
+    tweets = tweepy.Cursor(api.search_tweets,q='to:'+userName, result_type='recent', lang='en').items(500)
 
     for tweet in tweets:
         if hasattr(tweet, 'in_reply_to_status_id_str'):

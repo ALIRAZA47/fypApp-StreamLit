@@ -1,8 +1,11 @@
 from asyncore import write
+from cgitb import enable
 from typing import Text
 from xml.dom import ValidationErr
 import streamlit as st
 from st_aggrid import AgGrid
+from st_aggrid.grid_options_builder import GridOptionsBuilder
+
 
 import HelperFuncs
 import pandas as pd
@@ -64,7 +67,7 @@ def main():
     st.title("Deep Research App")
     st.markdown("**Welcome** 😊")
     
-    menu = ["Comparative Analysis", "Spark NLP", "BERT", "Comparison", "Live Twitter Feed"]
+    menu = ["Comparative Analysis", "Batch Analysis", "BERT", "Comparison", "Live Twitter Feed"]
     selectedTab = st.sidebar.selectbox("Menu", menu)
     
     if selectedTab == "Comparative Analysis":
@@ -92,8 +95,9 @@ def main():
                 st.write(result)
                 st.markdown(sentimentDict[result['sentiment'][0]])                
 
-    elif selectedTab == "Spark NLP": 
-        sparkAnalyzeBtn = st.button
+    elif selectedTab == "Batch Analysis": 
+        analyzeBtn = False
+        st.sidebar.checkbox("Show/Hide Spark NLP")
         rawData = pd.DataFrame()
         st.subheader("John Snow Labs' Spark NLP Sentiment Analysis")
         st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;} </style>', unsafe_allow_html=True)
@@ -111,19 +115,19 @@ def main():
             if file is not None:
                 rawData = pd.read_csv(file, on_bad_lines='skip')
         
-        # Show file 
-        st.markdown('<h4 style="text-align: center;:"> \
-                            Raw Comments (Twitter) \
-                            </h4>',
-                            unsafe_allow_html=True)
-        
+        # Show file preview
         if rawData.empty:
             st.warning("No Data Found")
         else:
-            AgGrid(rawData)
+            st.markdown('<h4 style="text-align: center;:"> \
+                            Raw Comments (Twitter) \
+                            </h4>',
+                            unsafe_allow_html=True)
+            gridOptions = HelperFuncs.buildGridOptionAgGrid(rawData)
+            AgGrid(rawData, gridOptions=gridOptions, enable_enterprise_modules=True)
             # Analyze comments
-        sparkAnalyzeBtn = st.button("Analyze Comments")
-        if sparkAnalyzeBtn: #if the button is clicked
+            analyzeBtn = st.button("Analyze Comments")
+        if analyzeBtn: #if the button is clicked
             st.markdown('<h4 style="text-align: center;:"> \
                         Resultant Data (with Predicted Sentiments) \
                         </h4>',
@@ -131,7 +135,10 @@ def main():
             resultDF = pd.DataFrame()
             resultDF = SparkNLP.doEverything(rawData)
             # confMatrix = HelperFuncs.generateConfusionMatrix(resultDF)
-            AgGrid(resultDF, key='resultDF')
+            gridOptions = HelperFuncs.buildGridOptionAgGrid(resultDF)
+            AgGrid(resultDF, gridOptions=gridOptions, enable_enterprise_modules=True)
+        else:
+            pass
     elif selectedTab == "Comparision": 
         st.subheader("About")
     
