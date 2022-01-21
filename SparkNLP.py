@@ -25,19 +25,19 @@ from sparknlp.pretrained import PretrainedPipeline
 # print(tweets_df)
 
 
-colnames=['tweet_id', 'sentiment', 'text'] 
+colnames=['Tweet ID', 'True Sentiment', 'Tweet'] 
 # tweets_df.head()
 
 # %%
 def readAndShowData():
     tweets_df = pd.read_csv('data/3points_dataset_tweets.tsv',sep="\t" ,encoding = "ISO-8859-1", header=None, names=colnames) 
-    tweets_df = tweets_df[(tweets_df.text != "Not Available")]
-    tweets_df = tweets_df[(tweets_df.text != "")]
-    tweets_df = tweets_df[(tweets_df.text != " ")]
+    tweets_df = tweets_df[(tweets_df.Tweet != "Not Available")]
+    tweets_df = tweets_df[(tweets_df.Tweet != "")]
+    tweets_df = tweets_df[(tweets_df.Tweet != " ")]
 
     tweets_df.head()
 
-    tweets_df['text'] = tweets_df['text'].apply(lambda x: re.split('http:\/\/.*', str(x))[0])
+    tweets_df['Tweet'] = tweets_df['Tweet'].apply(lambda x: re.split('http:\/\/.*', str(x))[0])
     return tweets_df
 
 
@@ -81,7 +81,7 @@ def transformData(tweets_df, spark, nlpPipeline):
 
     pipelineModel = nlpPipeline.fit(empty_df)
 
-    df = spark.createDataFrame(pd.DataFrame({"text":tweets_df['text']}))
+    df = spark.createDataFrame(pd.DataFrame({"text":tweets_df['Tweet']}))
     result = pipelineModel.transform(df)
     
     return result
@@ -102,18 +102,19 @@ def concateResults(result, tweets_df):
             F.expr("cols['1']").alias("sentiment")).toPandas()
 
     pred_sentis= list(pd_df['sentiment'])
-    tweets_df.insert(3, 'Predicted Sentiments', pred_sentis)
+    resultDF = tweets_df.copy()
+    resultDF.insert(0, 'Predicted Sentiment', pred_sentis)
     # tweets_df.head()
-    return tweets_df
+    return resultDF
     # tweets_df.to_csv('tweets_with_predicted_sentiment.csv', index=False)
 # %% 
 # @title driver function
 def doEverything(rawData = readAndShowData()):
+    print(rawData.head())
     spark, nlpPipeline, lightPipeline = startSparkAndPreparePipeline()
     # transform data
     result = transformData(rawData, spark, nlpPipeline)
 
     # transform results of Spark to Pandas DataFrame
     transformedData = concateResults(result, rawData)
-    confMatrix = pd.crosstab(transformedData['sentiment'], transformedData['Predicted Sentiments'])
-    return transformedData, confMatrix
+    return transformedData

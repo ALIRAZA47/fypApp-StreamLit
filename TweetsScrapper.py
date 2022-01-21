@@ -2,14 +2,15 @@ import tweepy
 import ssl
 import pandas as pd
 import csv
+import os
 
 # ssl._create_default_https_context = ssl._create_unverified_context
 
 # Set API Key and Access tokens
-consumer_key = "Xb15yG3eW4NWtco9ZXGeDff2z"
-consumer_secret = "eMpSXheAWshWWLJQfTTukEwzMUELTLKOsTaccU2gVk7ZNgW9wE"
-access_token = "821276337239363584-8bMyxuw9QEKpyc5e5Omq7ahTOb1N60t"
-access_token_secret = "cswpR9KeYl51XfFF2xUSNnuAMfEBJjgfRHxgoY7KfhN8C"
+consumer_key = os.environ['TWITTER_CONSUMER_KEY']
+consumer_secret = os.environ['TWITTER_CONSUMER_SECRET']
+access_token =  os.environ['TWITTER_ACCESS_TOKEN']
+access_token_secret = os.environ['TWITTER_ACCESS_TOKEN_SECRET']
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
@@ -37,6 +38,6 @@ def fetchTweets(inputURL):
                 replies.append(tweet)
     # print(replies)
     print("-------------------1")
-    tweetsDF = pd.DataFrame(data=[tweet.text for tweet in replies], columns=['text'])
+    tweetsDF = pd.DataFrame(data=[tweet.text for tweet in replies], columns=['Tweet'])
     tweetsDF.to_csv('replies_clean.csv', index=False)
     return tweetsDF

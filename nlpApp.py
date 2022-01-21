@@ -4,6 +4,7 @@ from xml.dom import ValidationErr
 import streamlit as st
 from st_aggrid import AgGrid
 
+import HelperFuncs
 import pandas as pd
 import altair as alt #For Visualization
 import os
@@ -91,26 +92,45 @@ def main():
                 st.markdown(sentimentDict[result['sentiment'][0]])                
 
     elif selectedTab == "Spark NLP": 
+        sparkAnalyzeBtn = st.button
+        rawData = pd.DataFrame()
         st.subheader("John Snow Labs' Spark NLP Sentiment Analysis")
-        rawData = SparkNLP.readAndShowData()
-        # st.header("Raw Comments (Twitter)", 
-        st.markdown('<h4 style="text-align: center;:"> \
-                    Raw Comments (Twitter) \
-                    </h4>',
-                    unsafe_allow_html=True)
-        AgGrid(rawData)
+        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;} </style>', unsafe_allow_html=True)
+        selectedRadioBtn = st.radio("", ("Analyze Default Batch", "Analyze Custom Batch"))
         
-        # Analyze comments
+        if selectedRadioBtn == "Analyze Default Batch":
+            rawData = SparkNLP.readAndShowData()
+            
+    # analyze custom batch (file)
+        else:
+            rawData = pd.DataFrame()
+            st.subheader("Analyze Custom Batch")
+            #st.write("Upload a file")
+            file = st.file_uploader("Upload a file", type=["csv"], )
+            if file is not None:
+                rawData = pd.read_csv(file, on_bad_lines='skip')
+        
+        # Show file 
+        st.markdown('<h4 style="text-align: center;:"> \
+                            Raw Comments (Twitter) \
+                            </h4>',
+                            unsafe_allow_html=True)
+        
+        if rawData.empty:
+            st.warning("No Data Found")
+        else:
+            AgGrid(rawData)
+            # Analyze comments
         sparkAnalyzeBtn = st.button("Analyze Comments")
         if sparkAnalyzeBtn: #if the button is clicked
             st.markdown('<h4 style="text-align: center;:"> \
-                    Resultant Data (with Predicted Sentiments) \
-                    </h4>',
-                    unsafe_allow_html=True)
-            resultDF, confMatrix = SparkNLP.doEverything()
-            AgGrid(resultDF)
-            st.write(confMatrix)
-    
+                        Resultant Data (with Predicted Sentiments) \
+                        </h4>',
+                        unsafe_allow_html=True)
+            resultDF = pd.DataFrame()
+            resultDF = SparkNLP.doEverything(rawData)
+            # confMatrix = HelperFuncs.generateConfusionMatrix(resultDF)
+            AgGrid(resultDF, key='resultDF')
     elif selectedTab == "Comparision": 
         st.subheader("About")
     
@@ -128,9 +148,12 @@ def main():
             if validators.url(inputTweetLink):
                 # URL is valid
                 st.info("Fetching Tweets...")
-                tweets = pd.read_csv('replies_clean.csv')
-                # tweets = TweetsScrapper.fetchTweets(inputTweetLink)
-                st.subheader("(Raw) Replies on {} by {} " .format(inputTweetLink.split('/')[3], inputTweetLink.split('/')[5]))
+                # tweets = pd.read_csv('replies_clean.csv')
+                tweets = TweetsScrapper.fetchTweets(inputTweetLink)
+                st.subheader("(Raw) Replies on {} by {} " 
+                            .format(inputTweetLink.split('/')[3],
+                                    inputTweetLink.split('/')[5])
+                            )
                 AgGrid(tweets)
                 
                 # TODO: Add Live Sentiment Analysis here
