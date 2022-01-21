@@ -9,9 +9,10 @@ import pandas as pd
 import altair as alt #For Visualization
 import os
 import validators
+import OpenAI
+
 import TweetsScrapper  #For Scrapping Tweets
 import TextBlob
-import OpenAI
 # spark nlp imports
 import TextPreprocessing
 import SparkNLP  # our API
