@@ -5,7 +5,7 @@ import csv
 import os
 
 # ssl._create_default_https_context = ssl._create_unverified_context
-
+ 
 # Set API Key and Access tokens
 consumer_key = os.environ['TWITTER_CONSUMER_KEY']
 consumer_secret = os.environ['TWITTER_CONSUMER_SECRET']
