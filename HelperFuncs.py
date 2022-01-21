@@ -11,5 +11,10 @@ def getEnvironVar(varname):
     p = subprocess.Popen(CMD, stdout=subprocess.PIPE, shell=True, executable='/bin/bash')
     return (p.stdout.readlines()[0].strip())
 
-
-print(getEnvironVar('OPENAI_API_KEY'))
+def buildGridOptionAgGrid(df):
+    gb = GridOptionsBuilder.from_dataframe(df)
+    # gb.configure_pagination()
+    gb.configure_side_bar()
+    gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc="sum", editable=True)
+    gridOptions = gb.build()
+    return gridOptions
