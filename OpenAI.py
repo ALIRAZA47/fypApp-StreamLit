@@ -9,7 +9,7 @@ def sentimentAnalysis(rawText):
     trainDatePlusRawText = trainDatePlusRawText + rawText + "\"\nSentiment:"
     response = openai.Completion.create(
     model="davinci:ft-personal-2022-01-23-11-55-31",
-    prompt=trainDatePlusRawText,temperature=0.3,
+    prompt=trainDatePlusRawText,temperature=0.7,
     max_tokens=60,
     top_p=1.0,
     frequency_penalty=0.5,
