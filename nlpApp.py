@@ -85,7 +85,7 @@ def main():
             spark, fullPipline, lightPipeline = SparkNLP.startSparkAndPreparePipeline()    #Spark NLP intialization
             with col1:
                 # Open AI Sentiment Analysis
-                st.info("Openai GPT3 (curie)") #Openai GPT-3 <--------------------------------------
+                st.info("Openai GPT3 (davinci)") #Openai GPT-3 <--------------------------------------
                 OpenAI.showResults(inputText) 
                 
             with col2:
