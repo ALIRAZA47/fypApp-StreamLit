@@ -194,4 +194,49 @@ def doFullPreprocessing(tweets_df):
     tweets_df = cleanTextDataFrame(tweets_df)
     tweets_df = correctSpells(tweets_df)
     tweets_df = removePunctuation(tweets_df)
+    tweets_df = removeStopwordsAndLemmatizeDataframe(tweets_df)
+    return tweets_df
+
+#%%
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+from nltk.stem import SnowballStemmer
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk import pos_tag
+
+#%%
+def get_wordnet_pos(treebank_tag):
+        """
+        return WORDNET POS compliance to WORDENT lemmatization (a,n,r,v) 
+        """
+        if treebank_tag.startswith('J'):
+            return wordnet.ADJ
+        elif treebank_tag.startswith('V'):
+            return wordnet.VERB
+        elif treebank_tag.startswith('N'):
+            return wordnet.NOUN
+        elif treebank_tag.startswith('R'):
+            return wordnet.ADV
+        else:
+            # As default pos in lemmatization is Noun
+            return wordnet.NOUN
+
+# %%
+def removeStopWordsAndLemmatize(text):
+    lemmatizer = WordNetLemmatizer()
+    stop_words = set(stopwords.words('english'))
+    word_tokens = word_tokenize(text)
+    filtered_sentence = [w for w in word_tokens if not w in stop_words]
+    filtered_sentence = []
+    for w in word_tokens:
+        if w not in stop_words:
+            filtered_sentence.append(lemmatizer.lemmatize(w, pos='v'))
+    return " ".join(filtered_sentence)
+
+#%%
+def removeStopwordsAndLemmatizeDataframe(tweets_df):
+    tweets_df['lemmatized_text'] = tweets_df['Tweet'].apply(lambda x: removeStopWordsAndLemmatize(x))
+    tweets_df.drop(['Tweet'], axis=1, inplace=True)
+    tweets_df.rename(columns={'lemmatized_text': 'Tweet'}, inplace=True)
     return tweets_df
