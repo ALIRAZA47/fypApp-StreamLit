@@ -66,8 +66,10 @@ def cleanseText(text):
 
 # %%
 def cleanTextDataFrame(tweets_df):
-    tweets_df = tweets_df[(tweets_df.text != "Not Available")]
-    tweets_df['text'] = tweets_df['text'].apply(lambda x: cleanseText(x))
+    tweets_df = tweets_df[(tweets_df.Tweet != "Not Available")]
+    tweets_df['clean_text'] = tweets_df['Tweet'].apply(lambda x: cleanseText(x))
+    tweets_df.drop(['Tweet'], axis=1, inplace=True)
+    tweets_df.rename(columns={'clean_text': 'Tweet'}, inplace=True)
     return tweets_df
 
 
@@ -130,8 +132,10 @@ def prepareSpellPipeline():
 # %%
 def correctSpells(tweets_df):
     lp, spellPipeline = prepareSpellPipeline()
-    tweets_df['corrected_text'] = tweets_df['text'].apply(lambda x: " ".join(lp.annotate(x)['checked']))
-    return tweets_df['corrected_text']
+    tweets_df['corrected_text'] = tweets_df['Tweet'].apply(lambda x: " ".join(lp.annotate(x)['checked']))
+    tweets_df.drop(['Tweet'], axis=1, inplace=True)
+    tweets_df.rename(columns={'corrected_text': 'Tweet'}, inplace=True)
+    return tweets_df
 
 
 # %% [markdown]
@@ -177,15 +181,17 @@ def preparePunctuationPipeline():
 # %%
 def removePunctuation(tweets_df):
     fp, lp = preparePunctuationPipeline()
-    tweets_df['normalized_text'] = tweets_df['corrected_text'].apply(lambda x: " ".join(lp.annotate(x)))
-    return tweets_df['normalized_text']
+    tweets_df['normalized_text'] = tweets_df['Tweet'].apply(lambda x: " ".join(lp.annotate(x)['token']))
+    tweets_df.drop(['Tweet'], axis=1, inplace=True)
+    tweets_df.rename(columns={'normalized_text': 'Tweet'}, inplace=True)
+    return tweets_df
 
 # %%
 # result.show(5, truncate=20)
 
 # %%
-# result.select('normalized.result').take(8)
-
-# lp, fp = prepareSpellPipeline()
-# print(" ".join(lp.annotate("I'm a studentt")['checked']))
-
+def doFullPreprocessing(tweets_df):
+    tweets_df = cleanTextDataFrame(tweets_df)
+    tweets_df = correctSpells(tweets_df)
+    tweets_df = removePunctuation(tweets_df)
+    return tweets_df

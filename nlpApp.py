@@ -1,4 +1,5 @@
 from asyncore import write
+from builtins import breakpoint
 
 from cgitb import enable
 from typing import Text
@@ -84,7 +85,7 @@ def main():
             spark, fullPipline, lightPipeline = SparkNLP.startSparkAndPreparePipeline()    #Spark NLP intialization
             with col1:
                 # Open AI Sentiment Analysis
-                st.info("Openai GPT3") #Openai GPT-3 <--------------------------------------
+                st.info("Openai GPT3 (curie)") #Openai GPT-3 <--------------------------------------
                 OpenAI.showResults(inputText) 
                 
             with col2:
@@ -97,7 +98,7 @@ def main():
                 st.write(sentimentVader)
             
             with col4:
-                st.info("SparkNLP's Pretrained Pipeline (sentimentdl_user_twitter )") #Spark NLP Pipeline<--------------------------------------
+                st.info("SparkNLP's (sentimentdl_user_twitter )") #Spark NLP Pipeline<--------------------------------------
                 result = lightPipeline.annotate(inputText)
                 # st.write(result)           #full response from spark
                 st.markdown(sentimentDict[result['sentiment'][0]])                
@@ -200,25 +201,74 @@ def main():
         # Form
         with st.form(key='twitterLinkForm'):
             inputTweetLink = st.text_area("Enter Tweet Link Here:")
-            fetchTweetsBtn = st.form_submit_button(label='Fetch Tweets')
+            fetchTweetsBtn = st.form_submit_button(label='Fetch and Analyze Replies')
+        analyzeBtn = False
+        sparkNlpCB = st.sidebar.checkbox("SparkNLP")
+        textBlobCB = st.sidebar.checkbox("TextBlob")
+        vaderCB = st.sidebar.checkbox("Vader")
+        fetchedTweets = pd.DataFrame()
         
-        if fetchTweetsBtn:
-            if validators.url(inputTweetLink):
-                # URL is valid
-                st.info("Fetching Tweets...")
-                # tweets = pd.read_csv('replies_clean.csv')
-                tweets = TweetsScrapper.fetchTweets(inputTweetLink)
-                st.subheader("(Raw) Replies on {} by {} " 
-                            .format(inputTweetLink.split('/')[3],
-                                    inputTweetLink.split('/')[5])
-                            )
-                AgGrid(tweets)
+        if sparkNlpCB or textBlobCB or vaderCB:
+            # sparkNlpCB = st.sidebar.checkbox("SparkNLP")
+            if fetchTweetsBtn:
+                if validators.url(inputTweetLink):
+                    # URL is valid
+                    st.info("Fetching Tweets :hourglass:")
+                    fetchedTweets = pd.read_csv('replies_clean.csv')
+                    # fetchedTweets = TweetsScrapper.fetchTweets(inputTweetLink)
+                    st.markdown('<h4 style="text-align: center;:"> \
+                                    (Raw) Replies on tweet '+inputTweetLink.split('/')[5]+\
+                                    ' by '+inputTweetLink.split('/')[3]+' \
+                                </h4>',
+                                    unsafe_allow_html=True)
+                    gridOptions = HelperFuncs.buildGridOptionAgGrid(fetchedTweets)
+                    AgGrid(fetchedTweets, gridOptions=gridOptions, enable_enterprise_modules=True)
+                    
+                    # TODO: Add Live Sentiment Analysis here
+                else:
+                    st.error("Please Enter a Valid URL")
+                rawData = fetchedTweets
+                # Show file preview
+                if rawData.empty:
+                    st.warning("No Data Found")
+                    
+                resultsLoaded = False
+                resultDF = fetchedTweets
                 
-                # TODO: Add Live Sentiment Analysis here
+                if sparkNlpCB:
+                    resultDF = SparkNLP.doEverything(resultDF)
+                if textBlobCB :
+                    resultDF = TextBlob.analyzeBatch(resultDF)
+                if vaderCB:
+                    resultDF = Vader.analyzeBatch(resultDF)
+                if vaderCB == False and sparkNlpCB == False and textBlobCB == False:
+                    st.warning("Please select atleast one option from the checkboxes")   
                 
+                resultsLoaded = True
                 
-            else:
-                st.error("Please Enter a Valid URL")
-  
+                if resultDF.empty:
+                    st.warning("No Data Found")
+                else:
+                    st.markdown('<h4 style="text-align: center;:"> \
+                            Resultant Data (with Predicted Sentiments) \
+                            </h4>',
+                            unsafe_allow_html=True)
+                    gridOptions = HelperFuncs.buildGridOptionAgGrid(resultDF)
+                    AgGrid(resultDF, gridOptions=gridOptions, enable_enterprise_modules=True)
+                
+                    # CSS to inject contained in a string
+                    hide_dataframe_row_index = """
+                                <style>
+                                .row_heading.level0 {display:none}
+                                .blank {display:none}
+                                </style>
+                                """
+
+                    # Inject CSS with Markdown
+                    st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+                    
+                    
+        else:
+            st.error("Please select atleast one option from the checkboxes")
 if __name__ == "__main__":
     main()
