@@ -103,7 +103,7 @@ def concateResults(result, tweets_df):
 
     pred_sentis= list(pd_df['sentiment'])
     resultDF = tweets_df.copy()
-    resultDF.insert(0, 'Predicted Sentiment', pred_sentis)
+    resultDF.insert(0, 'SparkNLP_Preds', pred_sentis)
     # tweets_df.head()
     return resultDF
     # tweets_df.to_csv('tweets_with_predicted_sentiment.csv', index=False)

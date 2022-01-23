@@ -13,6 +13,7 @@ import altair as alt #For Visualization
 import os
 import validators
 import OpenAI
+import Vader
 
 import TweetsScrapper  #For Scrapping Tweets
 import TextBlob
@@ -77,7 +78,7 @@ def main():
             submit_button = st.form_submit_button(label='Analyze')
             
         # layout
-        col1,col2,col3 = st.columns(3) 
+        col1,col2,col3, col4 = st.columns(4) # 4 columns
         if submit_button:
             spark, fullPipline, lightPipeline = SparkNLP.startSparkAndPreparePipeline()    #Spark NLP intialization
             with col1:
@@ -88,57 +89,85 @@ def main():
             with col2:
                 st.info("TextBlob Sentiment Analysis (sentiwordnet)")
                 TextBlob.showResults(inputText)
-            
+                
             with col3:
+                st.info("Vader Sentiment Analysis")
+                sentimentVader, fullResVader = Vader.computeSentiment(inputText)
+                st.write(sentimentVader)
+            
+            with col4:
                 st.info("SparkNLP's Pretrained Pipeline (sentimentdl_user_twitter )") #Spark NLP Pipeline<--------------------------------------
                 result = lightPipeline.annotate(inputText)
-                st.write(result)
+                # st.write(result)           #full response from spark
                 st.markdown(sentimentDict[result['sentiment'][0]])                
 
     elif selectedTab == "Batch Analysis": 
         analyzeBtn = False
-        st.sidebar.checkbox("Show/Hide Spark NLP")
-        rawData = pd.DataFrame()
-        st.subheader("John Snow Labs' Spark NLP Sentiment Analysis")
-        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;} </style>', unsafe_allow_html=True)
-        selectedRadioBtn = st.radio("", ("Analyze Default Batch", "Analyze Custom Batch"))
-        
-        if selectedRadioBtn == "Analyze Default Batch":
-            rawData = SparkNLP.readAndShowData()
-            
-    # analyze custom batch (file)
-        else:
+        sparkNlpCB = st.sidebar.checkbox("SparkNLP")
+        textBlobCB = st.sidebar.checkbox("TextBlob")
+        vaderCB = st.sidebar.checkbox("Vader")
+        if sparkNlpCB or textBlobCB or vaderCB:
+            # sparkNlpCB = st.sidebar.checkbox("SparkNLP")
             rawData = pd.DataFrame()
-            st.subheader("Analyze Custom Batch")
-            #st.write("Upload a file")
-            file = st.file_uploader("Upload a file", type=["csv"], )
-            if file is not None:
-                rawData = pd.read_csv(file, on_bad_lines='skip')
-        
-        # Show file preview
-        if rawData.empty:
-            st.warning("No Data Found")
-        else:
-            st.markdown('<h4 style="text-align: center;:"> \
-                            Raw Comments (Twitter) \
+            st.subheader("John Snow Labs' Spark NLP Sentiment Analysis")
+            st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;} </style>', unsafe_allow_html=True)
+            selectedRadioBtn = st.radio("", ("Analyze Default Batch", "Analyze Custom Batch"))
+            
+            if selectedRadioBtn == "Analyze Default Batch":
+                rawData = SparkNLP.readAndShowData()
+                
+            # analyze custom batch (file)
+            else:
+                rawData = pd.DataFrame()
+                st.subheader("Analyze Custom Batch")
+                #st.write("Upload a file")
+                file = st.file_uploader("Upload a file", type=["csv"], )
+                if file is not None:
+                    rawData = pd.read_csv(file, on_bad_lines='skip')
+            
+            # Show file preview
+            if rawData.empty:
+                st.warning("No Data Found")
+            else:
+                st.markdown('<h4 style="text-align: center;:"> \
+                                Raw Comments (Twitter) \
+                                </h4>',
+                                unsafe_allow_html=True)
+                gridOptions = HelperFuncs.buildGridOptionAgGrid(rawData)
+                AgGrid(rawData, gridOptions=gridOptions, enable_enterprise_modules=True)
+                # Analyze comments
+                analyzeBtn = st.button("Analyze Comments")
+                
+            if analyzeBtn: #if the button is clicked
+                resultsLoaded = False
+                selected_cols = rawData[['Tweet']]
+                resultDF = selected_cols.copy()
+                if sparkNlpCB:
+                    resultDF = SparkNLP.doEverything(resultDF)
+                    
+                if textBlobCB :
+                    resultDF = TextBlob.analyzeBatch(resultDF)
+                    
+                if vaderCB:
+                    resultDF = Vader.analyzeBatch(resultDF)
+                    
+                if vaderCB == False and sparkNlpCB == False and textBlobCB == False:
+                    st.warning("Please select atleast one option from the checkboxes")   
+                
+                resultsLoaded = True
+                
+                if resultDF.empty:
+                    st.warning("No Data Found")
+                else:
+                    st.markdown('<h4 style="text-align: center;:"> \
+                            Resultant Data (with Predicted Sentiments) \
                             </h4>',
                             unsafe_allow_html=True)
-            gridOptions = HelperFuncs.buildGridOptionAgGrid(rawData)
-            AgGrid(rawData, gridOptions=gridOptions, enable_enterprise_modules=True)
-            # Analyze comments
-            analyzeBtn = st.button("Analyze Comments")
-        if analyzeBtn: #if the button is clicked
-            st.markdown('<h4 style="text-align: center;:"> \
-                        Resultant Data (with Predicted Sentiments) \
-                        </h4>',
-                        unsafe_allow_html=True)
-            resultDF = pd.DataFrame()
-            resultDF = SparkNLP.doEverything(rawData)
-            # confMatrix = HelperFuncs.generateConfusionMatrix(resultDF)
-            gridOptions = HelperFuncs.buildGridOptionAgGrid(resultDF)
-            AgGrid(resultDF, gridOptions=gridOptions, enable_enterprise_modules=True)
+                    gridOptions = HelperFuncs.buildGridOptionAgGrid(resultDF)
+                    AgGrid(resultDF, gridOptions=gridOptions, enable_enterprise_modules=True)
+                    
         else:
-            pass
+            st.error("Please select atleast one option from the checkboxes")
     elif selectedTab == "Comparision": 
         st.subheader("About")
     

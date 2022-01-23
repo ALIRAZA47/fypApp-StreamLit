@@ -3,11 +3,11 @@ import streamlit as st
 import pandas as pd
 import altair as alt #For Visualization
 
-def computerSentiment(text):
+def computeSentiment(text):
     fullRes = TextBlob(text)
     sentimentRes = fullRes.sentiment
     sentiment = ""
-    st.write(sentimentRes)
+    # st.write(sentimentRes)
     # Emoji
     if sentimentRes.polarity > 0:
         sentiment = "**Sentiment::** Positive :smiley: "
@@ -21,7 +21,7 @@ def computerSentiment(text):
 # TextBlob Sentiment Analysis (sentiwordnet)
 def showResults(inputText):
 
-    sentiment, fullResult = computerSentiment(inputText)
+    sentiment, fullResult = computeSentiment(inputText)
     st.markdown(sentiment)
 
     # DataFrame TextBlob Output
@@ -29,10 +29,21 @@ def showResults(inputText):
     # sentiDataFrame = pd.DataFrame(sentiDic.items(), columns=['metric', 'value'])
     
     resultDataFrame = pd.DataFrame({'polarity': fullResult.polarity,'subjectivity': fullResult.subjectivity}.items(), columns=['metric', 'value'])
-    st.dataframe(resultDataFrame)
-    # Visualization
-    # c = alt.Chart(resultDataFrame).mark_bar().encode(
-    # x='metric',
-    # y='value',
-    # color='metric')
-    # st.altair_chart(c, use_container_width=True)
+    # st.dataframe(resultDataFrame)
+
+# analyze batch of text
+labels = ['negative', 'neutral', 'positive']
+def labelSentiment(sentiment):
+    if sentiment < 0:
+        return labels[0]
+    elif sentiment == 0:
+        return labels[1]
+    else:
+        return labels[2]
+def analyzeBatch(tweets_df):    
+    tweets_df['TextBlob_Preds'] = tweets_df['Tweet'].apply(lambda tweet: labelSentiment(TextBlob(tweet).sentiment.polarity))
+    cols = list(tweets_df.columns)
+    cols = [cols[-1]] + cols[:-1]
+    df = tweets_df[cols]
+
+    return df

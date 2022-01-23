@@ -18,7 +18,7 @@ def sentimentAnalysis(rawText):
     
 def showResults(rawText):
     sentimentOpen,rawResponse = sentimentAnalysis(rawText)
-    st.write(rawResponse)
+    # st.write(rawResponse)  #full response from openAI API
     #Emoji
     if sentimentOpen == "Positive":
         st.markdown("**Sentiment::** Positive :smiley: ")
