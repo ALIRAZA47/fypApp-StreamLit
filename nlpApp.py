@@ -1,4 +1,5 @@
 from asyncore import write
+
 from cgitb import enable
 from typing import Text
 from xml.dom import ValidationErr
@@ -35,7 +36,7 @@ def customizeUI():
 
     #Set the page title and icon
     st.set_page_config(
-        page_title="Deep NLP",
+        page_title="ICA",
         page_icon="🔥", 
         layout="wide",
         initial_sidebar_state="expanded",
@@ -65,10 +66,10 @@ def customizeUI():
 def main():
     customizeUI()
     #st.image('./cool.png')
-    st.title("Deep Research App")
+    st.title("Intelligent Content Analyzer")
     st.markdown("**Welcome** 😊")
     
-    menu = ["Comparative Analysis", "Batch Analysis", "BERT", "Comparison", "Live Twitter Feed"]
+    menu = ["Comparative Analysis", "Batch Analysis", "Live Twitter Feed"]
     selectedTab = st.sidebar.selectbox("Menu", menu)
     
     if selectedTab == "Comparative Analysis":
@@ -109,7 +110,7 @@ def main():
         if sparkNlpCB or textBlobCB or vaderCB:
             # sparkNlpCB = st.sidebar.checkbox("SparkNLP")
             rawData = pd.DataFrame()
-            st.subheader("John Snow Labs' Spark NLP Sentiment Analysis")
+            st.subheader("Batch Analysis")
             st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;} </style>', unsafe_allow_html=True)
             selectedRadioBtn = st.radio("", ("Analyze Default Batch", "Analyze Custom Batch"))
             
@@ -121,7 +122,7 @@ def main():
                 rawData = pd.DataFrame()
                 st.subheader("Analyze Custom Batch")
                 #st.write("Upload a file")
-                file = st.file_uploader("Upload a file", type=["csv"], )
+                file = st.file_uploader("Upload a CSV file", type=["csv"], help="File header should be 'True Sentiment', Tweet ID and 'Tweet' respectively")
                 if file is not None:
                     rawData = pd.read_csv(file, on_bad_lines='skip')
             
@@ -140,16 +141,27 @@ def main():
                 
             if analyzeBtn: #if the button is clicked
                 resultsLoaded = False
-                selected_cols = rawData[['Tweet']]
+                accSystems = []
+                accList = []
+                selected_cols = rawData[['True Sentiment', 'Tweet']]
                 resultDF = selected_cols.copy()
                 if sparkNlpCB:
                     resultDF = SparkNLP.doEverything(resultDF)
+                    sparkAcc = HelperFuncs.computeAccuracy(resultDF, 'SparkNLP_Preds')
+                    accList.append(sparkAcc)
+                    accSystems.append('SparkNLP')
                     
                 if textBlobCB :
                     resultDF = TextBlob.analyzeBatch(resultDF)
+                    textBlobAcc = HelperFuncs.computeAccuracy(resultDF, 'TextBlob_Preds')
+                    accList.append(textBlobAcc)
+                    accSystems.append('TextBlob')
                     
                 if vaderCB:
                     resultDF = Vader.analyzeBatch(resultDF)
+                    vadAcc = HelperFuncs.computeAccuracy(resultDF, "Vader_Preds")
+                    accList.append(vadAcc)
+                    accSystems.append('Vader')
                     
                 if vaderCB == False and sparkNlpCB == False and textBlobCB == False:
                     st.warning("Please select atleast one option from the checkboxes")   
@@ -165,14 +177,23 @@ def main():
                             unsafe_allow_html=True)
                     gridOptions = HelperFuncs.buildGridOptionAgGrid(resultDF)
                     AgGrid(resultDF, gridOptions=gridOptions, enable_enterprise_modules=True)
+                
+                    # CSS to inject contained in a string
+                    hide_dataframe_row_index = """
+                                <style>
+                                .row_heading.level0 {display:none}
+                                .blank {display:none}
+                                </style>
+                                """
+
+                    # Inject CSS with Markdown
+                    st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+                    accuracyDF = pd.DataFrame({"System": accSystems, "Accracy": accList})
+                    st.sidebar.dataframe(accuracyDF)
+                    
                     
         else:
             st.error("Please select atleast one option from the checkboxes")
-    elif selectedTab == "Comparision": 
-        st.subheader("About")
-    
-    elif selectedTab == "BERT": 
-        st.subheader("BERT Analysis")
     
     elif selectedTab == "Live Twitter Feed": 
         st.subheader("Live Twitter Feed")

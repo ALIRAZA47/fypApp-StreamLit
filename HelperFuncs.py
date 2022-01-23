@@ -3,9 +3,13 @@ import subprocess
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 
 
-def generateConfusionMatrix(data):
-        confMatrix = pd.crosstab(data['True Sentiment'], data['Predicted Sentiment'])
-
+def computeAccuracy(data, predLabel):
+        confMatrix = pd.crosstab(data['True Sentiment'], data[predLabel])
+        accuracy = (confMatrix.iloc[0,0] + confMatrix.iloc[1,1] + confMatrix.iloc[2,2]) \
+        / (confMatrix.iloc[0,0] + confMatrix.iloc[1,1] + confMatrix.iloc[0,1] + confMatrix.iloc[1,0] + \
+        confMatrix.iloc[2,2] + confMatrix.iloc[2,0] + confMatrix.iloc[0,2])
+        
+        return accuracy
 # to get environment variables
 def getEnvironVar(varname):
     CMD = 'echo $(source myscript.sh; echo $%s)' % varname
