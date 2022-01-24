@@ -1,15 +1,14 @@
 import pandas as pd
 import subprocess
 from st_aggrid.grid_options_builder import GridOptionsBuilder
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 
-
-def computeAccuracy(data, predLabel):
+def computeAPR(data, predLabel):
         confMatrix = pd.crosstab(data['True Sentiment'], data[predLabel])
-        accuracy = (confMatrix.iloc[0,0] + confMatrix.iloc[1,1] + confMatrix.iloc[2,2]) \
-        / (confMatrix.iloc[0,0] + confMatrix.iloc[1,1] + confMatrix.iloc[0,1] + confMatrix.iloc[1,0] + \
-        confMatrix.iloc[2,2] + confMatrix.iloc[2,0] + confMatrix.iloc[0,2])
-        
-        return accuracy
+        accuracy = accuracy_score(data['True Sentiment'], data[predLabel])
+        precision = precision_score(data['True Sentiment'], data[predLabel], average='weighted')
+        recall = recall_score(data['True Sentiment'], data[predLabel], average='weighted')
+        return accuracy, precision, recall
 # to get environment variables
 def getEnvironVar(varname):
     CMD = 'echo $(source myscript.sh; echo $%s)' % varname

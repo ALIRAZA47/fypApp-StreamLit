@@ -144,24 +144,32 @@ def main():
                 resultsLoaded = False
                 accSystems = []
                 accList = []
+                precList = []
+                recallList = []
                 selected_cols = rawData[['True Sentiment', 'Tweet']]
                 resultDF = selected_cols.copy()
                 if sparkNlpCB:
                     resultDF = SparkNLP.doEverything(resultDF)
-                    sparkAcc = HelperFuncs.computeAccuracy(resultDF, 'SparkNLP_Preds')
+                    sparkAcc, sparkPR, sparkRecall = HelperFuncs.computeAPR(resultDF, 'SparkNLP_Preds')
+                    recallList.append(sparkRecall)
+                    precList.append(sparkPR)
                     accList.append(sparkAcc)
                     accSystems.append('SparkNLP')
                     
                 if textBlobCB :
                     resultDF = TextBlob.analyzeBatch(resultDF)
-                    textBlobAcc = HelperFuncs.computeAccuracy(resultDF, 'TextBlob_Preds')
+                    textBlobAcc, tbPR, tbRec = HelperFuncs.computeAPR(resultDF, 'TextBlob_Preds')
+                    precList.append(tbPR)
+                    recallList.append(tbRec)
                     accList.append(textBlobAcc)
                     accSystems.append('TextBlob')
                     
                 if vaderCB:
                     resultDF = Vader.analyzeBatch(resultDF)
-                    vadAcc = HelperFuncs.computeAccuracy(resultDF, "Vader_Preds")
+                    vadAcc, vaderPR, vaderRC = HelperFuncs.computeAPR(resultDF, "Vader_Preds")
                     accList.append(vadAcc)
+                    precList.append(vaderPR)
+                    recallList.append(vaderRC)
                     accSystems.append('Vader')
                     
                 if vaderCB == False and sparkNlpCB == False and textBlobCB == False:
@@ -189,8 +197,9 @@ def main():
 
                     # Inject CSS with Markdown
                     st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
-                    accuracyDF = pd.DataFrame({"System": accSystems, "Accracy": accList})
-                    st.sidebar.dataframe(accuracyDF)
+                    
+                    accuracyDF = pd.DataFrame({"System": accSystems, "Accuracy": accList, "Precision": precList, "Recall": recallList})
+                    st.sidebar.dataframe(accuracyDF, width=900)
                     
                     
         else:
