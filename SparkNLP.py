@@ -25,19 +25,17 @@ from sparknlp.pretrained import PretrainedPipeline
 # print(tweets_df)
 
 
-colnames=['Tweet ID', 'True Sentiment', 'Tweet'] 
+colnames=[ 'True Sentiment', 'Tweet ID', 'Tweet'] 
 # tweets_df.head()
 
 # %%
-def readAndShowData():
-    tweets_df = pd.read_csv('data/3points_dataset_tweets.tsv',sep="\t" ,encoding = "ISO-8859-1", header=None, names=colnames) 
+def readAndShowData(filename="data/retweet_dataset_tweets.csv"):
+    tweets_df = pd.read_csv(filename,sep="," , skiprows=1, header=None, names=colnames) 
     tweets_df = tweets_df[(tweets_df.Tweet != "Not Available")]
     tweets_df = tweets_df[(tweets_df.Tweet != "")]
     tweets_df = tweets_df[(tweets_df.Tweet != " ")]
 
     tweets_df.head()
-
-    tweets_df['Tweet'] = tweets_df['Tweet'].apply(lambda x: re.split('http:\/\/.*', str(x))[0])
     return tweets_df
 
 

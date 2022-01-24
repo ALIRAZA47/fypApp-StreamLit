@@ -214,8 +214,8 @@ def main():
                 if validators.url(inputTweetLink):
                     # URL is valid
                     st.info("Fetching Tweets :hourglass:")
-                    fetchedTweets = pd.read_csv('replies_clean.csv')
-                    # fetchedTweets = TweetsScrapper.fetchTweets(inputTweetLink)
+                    # fetchedTweets = pd.read_csv('replies_clean.csv')
+                    fetchedTweets = TweetsScrapper.fetchTweets(inputTweetLink)
                     st.markdown('<h4 style="text-align: center;:"> \
                                     (Raw) Replies on tweet '+inputTweetLink.split('/')[5]+\
                                     ' by '+inputTweetLink.split('/')[3]+' \
