@@ -7,7 +7,7 @@ def computeAPR(data, predLabel):
         confMatrix = pd.crosstab(data['True Sentiment'], data[predLabel])
         accuracy = accuracy_score(data['True Sentiment'], data[predLabel])
         precision = precision_score(data['True Sentiment'], data[predLabel], average='weighted')
-        recall = recall_score(data['True Sentiment'], data[predLabel], average='weighted')
+        recall = recall_score(data['True Sentiment'], data[predLabel], average='macro')
         return accuracy, precision, recall
 # to get environment variables
 def getEnvironVar(varname):
