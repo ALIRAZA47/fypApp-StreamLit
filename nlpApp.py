@@ -74,7 +74,7 @@ def main():
     selectedTab = st.sidebar.selectbox("Menu", menu)
     
     if selectedTab == "Comparative Analysis":
-        st.subheader("Rule-Based Sentiment Analysis")
+        st.subheader("Rule-Based and ML-baseb Sentiment Analysis")
         with st.form(key='nlpForm'):
             inputText = st.text_area("Enter Text Here:")
             submit_button = st.form_submit_button(label='Analyze')
