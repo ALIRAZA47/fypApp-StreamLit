@@ -5,10 +5,10 @@ import os
 # ssl._create_default_https_context = ssl._create_unverified_context
 
 # Set API Key and Access tokens
-consumer_key = "Xb15yG3eW4NWtco9ZXGeDff2z"
-consumer_secret = "eMpSXheAWshWWLJQfTTukEwzMUELTLKOsTaccU2gVk7ZNgW9wE"
-access_token = "821276337239363584-8bMyxuw9QEKpyc5e5Omq7ahTOb1N60t"
-access_token_secret = "cswpR9KeYl51XfFF2xUSNnuAMfEBJjgfRHxgoY7KfhN8C"
+consumer_key = "***********************"
+consumer_secret = "***********************"
+access_token = "***********************"
+access_token_secret = "***********************"
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
