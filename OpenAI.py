@@ -4,7 +4,7 @@ import openai
 import streamlit as st
 
 def sentimentAnalysis(rawText):    
-    openai.api_key = "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"
+    openai.api_key = "*******************************"
     trainDatePlusRawText = "This is a Sentence sentiment classifier\n\n\nSentence: \"I loved the new Batman movie!\"\nSentiment: Positive\n###\nSentence: \"I hate it when my phone battery dies.\"\nSentiment: Negative\n###\nSentence: \"My day has been 👍\"\nSentiment: Positive\n###\nSentence: \"This is the link to the article\"\nSentiment: Neutral\n###\nSentence: \"This new music video blew my mind\"\nSentiment: Positive\n###\nSentence: \""
     trainDatePlusRawText = trainDatePlusRawText + rawText + "\"\nSentiment:"
     response = openai.Completion.create(
